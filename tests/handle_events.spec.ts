@@ -91,6 +91,8 @@ test("bulkWrite changes to mongodb", async (t) => {
   ]);
 
   const collection = store.getDriver(model);
-  const docs = await collection.find({}).toArray();
-  t.is(docs.length, 2);
+
+  t.is(collection.collectionName, "model_1_v1");
+
+  t.is(await collection.countDocuments(), 2);
 });

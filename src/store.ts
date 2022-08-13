@@ -61,7 +61,7 @@ export default async function makeMongoDBStore(
   }
 
   function getDriver<T>(model: MongoDBModel<T>): Collection<T> {
-    return db.collection(model.name);
+    return db.collection(getCollectionName(model));
   }
 
   async function handleEvents(events: JourneyCommittedEvent[]) {
@@ -98,8 +98,12 @@ export default async function makeMongoDBStore(
   async function clean() {
     // delete mongodb collections
     for (const model of models) {
-      const collection = getDriver(model);
-      await collection.drop();
+      try {
+        const collection = getDriver(model);
+        await collection.drop();
+      } catch (ex) {
+        // ignore
+      }
     }
   }
 
@@ -171,4 +175,8 @@ function convertModelOpsToMongoDbBulkWriteOp<DocumentType>(
 
     throw new Error(`Unknown op type: ${JSON.stringify(op)}`);
   });
+}
+
+function getCollectionName(model: MongoDBModel<any>) {
+  return `${model.name}_v${model.version}`;
 }
