@@ -1,0 +1,33 @@
+{
+  "name": "@jerni/store-mongodb",
+  "version": "1.0.0",
+  "description": "MongoDB store for jerni using mongodb native driver v4",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tungv/jerni-store-mongodb.git"
+  },
+  "keywords": [
+    "jerni",
+    "store",
+    "heq",
+    "mongodb",
+    "events"
+  ],
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tungv/jerni-store-mongodb/issues"
+  },
+  "homepage": "https://github.com/tungv/jerni-store-mongodb#readme",
+  "dependencies": {
+    "jerni": "^1.1.4",
+    "mongodb": "^4.8.1"
+  },
+  "devDependencies": {
+    "jerni-dev": "^1.0.4"
+  }
+}
