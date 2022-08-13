@@ -1,4 +1,12 @@
-import { Collection } from "mongodb";
+import {
+  Collection,
+  DeleteManyModel,
+  DeleteOneModel,
+  InsertOneModel,
+  UpdateManyModel,
+  UpdateOneModel,
+  WithId,
+} from "mongodb";
 
 export interface MongoDBStoreConfig {
   name: string;
@@ -8,15 +16,15 @@ export interface MongoDBStoreConfig {
   models: MongoDBModel<any>[];
 }
 
-export interface TransformFn {
-  (events: JourneyCommittedEvent[]): any;
+export interface TransformFn<DocumentType> {
+  (event: JourneyCommittedEvent): MongoOps<DocumentType>[];
   meta?: StoreMeta;
 }
 
-export interface MongoDBModel<T> {
+export interface MongoDBModel<DocumentType> {
   name: string;
   version: string;
-  transform: TransformFn;
+  transform: TransformFn<DocumentType>;
   meta?: StoreMeta;
 }
 
@@ -45,7 +53,7 @@ export interface MongoDBStore {
   ) => void;
 
   getDriver<T>(model: MongoDBModel<T>): Collection<T>;
-  handleEvents: (events: JourneyCommittedEvent[]) => void;
+  handleEvents: (events: JourneyCommittedEvent[]) => Promise<void>;
   getLastSeenId: () => Promise<number>;
   toString(): string;
 
@@ -59,3 +67,45 @@ export interface JourneyCommittedEvent {
   type: string;
   payload: unknown;
 }
+
+interface InsertOneOp<DocumentType> {
+  insertOne: InsertOneModel<DocumentType>["document"];
+}
+
+interface InsertManyOp<DocumentType> {
+  insertMany: InsertOneModel<DocumentType>["document"][];
+}
+
+interface UpdateOneOp<DocumentType> {
+  updateOne: {
+    where: UpdateOneModel<DocumentType>["filter"];
+    changes: UpdateOneModel<DocumentType>["update"];
+  };
+}
+
+interface UpdateManyOp<DocumentType> {
+  updateMany: {
+    where: UpdateManyModel<DocumentType>["filter"];
+    changes: UpdateManyModel<DocumentType>["update"];
+  };
+}
+
+interface DeleteOneOp<DocumentType> {
+  deleteOne: {
+    where: DeleteOneModel<DocumentType>["filter"];
+  };
+}
+
+interface DeleteManyOp<DocumentType> {
+  deleteMany: {
+    where: DeleteManyModel<DocumentType>["filter"];
+  };
+}
+
+export type MongoOps<DocumentType> =
+  | InsertOneOp<DocumentType>
+  | InsertManyOp<DocumentType>
+  | UpdateOneOp<DocumentType>
+  | UpdateManyOp<DocumentType>
+  | DeleteOneOp<DocumentType>
+  | DeleteManyOp<DocumentType>;

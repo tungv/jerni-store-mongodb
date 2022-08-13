@@ -6,7 +6,7 @@ test("it should register included event types from all models if they all specif
   const model1 = {
     name: "model_1",
     version: "1",
-    transform(_events: JourneyCommittedEvent[]) {
+    transform(_event: JourneyCommittedEvent) {
       return [];
     },
     meta: {
@@ -17,7 +17,7 @@ test("it should register included event types from all models if they all specif
   const model2 = {
     name: "model_2",
     version: "1",
-    transform(_events: JourneyCommittedEvent[]) {
+    transform(_event: JourneyCommittedEvent) {
       return [];
     },
     meta: {
@@ -44,7 +44,7 @@ test("it should register all events if at least one model does not specify its i
   const model1 = {
     name: "model_1",
     version: "1",
-    transform(_events: JourneyCommittedEvent[]) {
+    transform(_event: JourneyCommittedEvent) {
       return [];
     },
     meta: {
@@ -55,7 +55,7 @@ test("it should register all events if at least one model does not specify its i
   const model2 = {
     name: "model_2",
     version: "1",
-    transform(_events: JourneyCommittedEvent[]) {
+    transform(_event: JourneyCommittedEvent) {
       return [];
     },
   };

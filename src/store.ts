@@ -1,9 +1,10 @@
-import { Collection, MongoClient } from "mongodb";
+import { AnyBulkWriteOperation, Collection, MongoClient } from "mongodb";
 import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
   MongoDBStore,
   MongoDBModel,
+  MongoOps,
 } from "./types";
 
 export default async function makeMongoDBStore(
@@ -63,8 +64,31 @@ export default async function makeMongoDBStore(
     return db.collection(model.name);
   }
 
-  function handleEvents(events: JourneyCommittedEvent[]) {
+  async function handleEvents(events: JourneyCommittedEvent[]) {
     // TODO
+    const outputs = events.map((event) => {
+      return models.map((model) => model.transform(event));
+    });
+
+    let eventIndex = 0;
+
+    for (const allChangesForAnEvent of outputs) {
+      let modelIndex = 0;
+      for (const changesForAModel of allChangesForAnEvent) {
+        if (changesForAModel.length === 0) {
+          continue;
+        }
+        const model = models[modelIndex];
+        const collection = getDriver(model);
+
+        await collection.bulkWrite(
+          convertModelOpsToMongoDbBulkWriteOp(changesForAModel),
+        );
+
+        modelIndex++;
+      }
+      eventIndex++;
+    }
   }
 
   async function getLastSeenId() {
@@ -73,10 +97,78 @@ export default async function makeMongoDBStore(
 
   async function clean() {
     // delete mongodb collections
+    for (const model of models) {
+      const collection = getDriver(model);
+      await collection.drop();
+    }
   }
 
   async function dispose() {
     // close connections
     await client.close();
   }
+}
+
+function convertModelOpsToMongoDbBulkWriteOp<DocumentType>(
+  ops: MongoOps<DocumentType>[],
+): AnyBulkWriteOperation<DocumentType>[] {
+  return ops.flatMap((op): AnyBulkWriteOperation<DocumentType>[] => {
+    if ("insertOne" in op) {
+      return [
+        {
+          insertOne: { document: op.insertOne },
+        },
+      ];
+    }
+
+    if ("insertMany" in op) {
+      return op.insertMany.map((document) => ({
+        insertOne: { document },
+      }));
+    }
+
+    if ("updateOne" in op) {
+      return [
+        {
+          updateOne: {
+            filter: op.updateOne.where,
+            update: op.updateOne.changes,
+          },
+        },
+      ];
+    }
+
+    if ("updateMany" in op) {
+      return [
+        {
+          updateMany: {
+            filter: op.updateMany.where,
+            update: op.updateMany.changes,
+          },
+        },
+      ];
+    }
+
+    if ("deleteOne" in op) {
+      return [
+        {
+          deleteOne: {
+            filter: op.deleteOne.where,
+          },
+        },
+      ];
+    }
+
+    if ("deleteMany" in op) {
+      return [
+        {
+          deleteMany: {
+            filter: op.deleteMany.where,
+          },
+        },
+      ];
+    }
+
+    throw new Error(`Unknown op type: ${JSON.stringify(op)}`);
+  });
 }
