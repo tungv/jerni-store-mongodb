@@ -4,7 +4,7 @@
   "description": "MongoDB store for jerni using mongodb native driver v4",
   "main": "dist/index.js",
   "scripts": {
-    "test": "ava"
+    "test": "ava tests/**/*.spec.ts"
   },
   "repository": {
     "type": "git",
