@@ -76,7 +76,7 @@ export default async function makeMongoDBStore(
       let modelIndex = 0;
       for (const changesForAModel of allChangesForAnEvent) {
         let __op = 0;
-        if (changesForAModel.length === 0) {
+        if (changesForAModel === undefined || changesForAModel.length === 0) {
           continue;
         }
         const model = models[modelIndex];

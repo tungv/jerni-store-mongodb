@@ -133,6 +133,7 @@ export default function getBulkOperations(
           updateOne: {
             filter,
             update: changes,
+            arrayFilters: change.updateOne.arrayFilters,
           },
         },
       ];
@@ -153,6 +154,7 @@ export default function getBulkOperations(
         updateOne: {
           filter,
           update: pipeline,
+          arrayFilters: change.updateOne.arrayFilters,
         },
       },
     ];
@@ -174,6 +176,7 @@ export default function getBulkOperations(
           updateMany: {
             filter,
             update: changes,
+            arrayFilters: change.updateMany.arrayFilters,
           },
         },
       ];
@@ -194,6 +197,7 @@ export default function getBulkOperations(
         updateMany: {
           filter,
           update: pipeline,
+          arrayFilters: change.updateMany.arrayFilters,
         },
       },
     ];

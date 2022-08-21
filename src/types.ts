@@ -16,7 +16,7 @@ export interface MongoDBStoreConfig {
 }
 
 export interface TransformFn<DocumentType> {
-  (event: JourneyCommittedEvent): MongoOps<DocumentType>[];
+  (event: JourneyCommittedEvent): MongoOps<DocumentType>[] | void;
   meta?: StoreMeta;
 }
 
@@ -80,10 +80,12 @@ export interface UpdateOneOp<DocumentType> {
     | {
         where: UpdateOneModel<DocumentType>["filter"];
         changes: UpdateFilter<DocumentType>;
+        arrayFilters?: UpdateOneModel<DocumentType>["arrayFilters"];
       }
     | {
         where: UpdateOneModel<DocumentType>["filter"];
         pipeline: UpdateFilter<DocumentType>[];
+        arrayFilters?: UpdateOneModel<DocumentType>["arrayFilters"];
       };
 }
 
@@ -92,10 +94,12 @@ export interface UpdateManyOp<DocumentType> {
     | {
         where: UpdateOneModel<DocumentType>["filter"];
         changes: UpdateFilter<DocumentType>;
+        arrayFilters?: UpdateOneModel<DocumentType>["arrayFilters"];
       }
     | {
         where: UpdateOneModel<DocumentType>["filter"];
         pipeline: UpdateFilter<DocumentType>[];
+        arrayFilters?: UpdateOneModel<DocumentType>["arrayFilters"];
       };
 }
 
