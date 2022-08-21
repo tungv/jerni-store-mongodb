@@ -7,6 +7,11 @@ import {
   MongoDBModel,
 } from "./types";
 
+interface SnapshotDocument {
+  __v: number;
+  full_collection_name: string;
+}
+
 export default async function makeMongoDBStore(
   config: MongoDBStoreConfig,
 ): Promise<MongoDBStore> {
@@ -14,6 +19,27 @@ export default async function makeMongoDBStore(
   const db = client.db(config.dbName);
 
   const models = config.models;
+
+  const snapshotCollection = db.collection<SnapshotDocument>("jerni__snapshot");
+
+  // ensure snapshot collection
+  for (const model of models) {
+    const fullCollectionName = getCollectionName(model);
+    await snapshotCollection.updateOne(
+      {
+        full_collection_name: fullCollectionName,
+      },
+      {
+        $setOnInsert: {
+          __v: 0,
+          full_collection_name: fullCollectionName,
+        },
+      },
+      {
+        upsert: true,
+      },
+    );
+  }
 
   const store: MongoDBStore = {
     name: config.name,
@@ -97,10 +123,34 @@ export default async function makeMongoDBStore(
       }
       eventIndex++;
     }
+
+    // update snapshot collections
+    const lastSeenId = events[events.length - 1].id;
+    await snapshotCollection.updateMany(
+      {
+        full_collection_name: { $in: models.map(getCollectionName) },
+      },
+      {
+        $set: {
+          __v: lastSeenId,
+        },
+      },
+    );
   }
 
   async function getLastSeenId() {
-    return 0;
+    const snapshotCollection =
+      db.collection<SnapshotDocument>("jerni__snapshot");
+
+    const registeredModels = await snapshotCollection
+      .find({
+        full_collection_name: { $in: models.map(getCollectionName) },
+      })
+      .toArray();
+
+    if (registeredModels.length === 0) return 0;
+
+    return Math.max(0, Math.min(...registeredModels.map((doc) => doc.__v)));
   }
 
   async function clean() {
