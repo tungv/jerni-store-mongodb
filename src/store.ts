@@ -1,4 +1,5 @@
 import { Collection, MongoClient } from "mongodb";
+import getCollectionName from "./getCollectionName";
 import getBulkOperations from "./optimistic/getBulkOperations";
 import {
   JourneyCommittedEvent,
@@ -169,8 +170,4 @@ export default async function makeMongoDBStore(
     // close connections
     await client.close();
   }
-}
-
-function getCollectionName(model: MongoDBModel<any>) {
-  return `${model.name}_v${model.version}`;
 }
