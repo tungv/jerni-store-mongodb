@@ -3,7 +3,7 @@ import makeMongoDBStore from "../src/store";
 import { JourneyCommittedEvent, MongoDBModel } from "../src/types";
 
 test("it should fan out all events to all models", async (t) => {
-  t.plan(6);
+  t.plan(7);
   const model1 = {
     name: "model_1",
     version: "1",
@@ -46,6 +46,10 @@ test("it should fan out all events to all models", async (t) => {
       payload: {},
     },
   ]);
+
+  const lastSeen = await store.getLastSeenId();
+
+  t.is(lastSeen, 3);
 
   await store.dispose();
 });
