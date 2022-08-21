@@ -1,6 +1,6 @@
 import test from "ava";
-import makeMongoDBStore from "../src/store";
-import { JourneyCommittedEvent, MongoDBModel } from "../src/types";
+import makeMongoDBStore from "../../src/store";
+import { JourneyCommittedEvent, MongoDBModel } from "../../src/types";
 
 test("it should not apply an insertOne twice", async (t) => {
   interface TestCollection {
