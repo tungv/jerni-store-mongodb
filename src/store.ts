@@ -1,7 +1,7 @@
 import { Collection, MongoClient } from "mongodb";
 import getCollectionName from "./getCollectionName";
 import getBulkOperations from "./optimistic/getBulkOperations";
-import { runWithModel, Signal } from "./read";
+import { clearModelSlots, runWithModel, Signal } from "./read";
 import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
@@ -101,7 +101,7 @@ export default async function makeMongoDBStore(
         return [];
       }
 
-      return models.map((model) => {
+      const out = models.map((model) => {
         try {
           return runWithModel(model, event);
         } catch (error) {
@@ -116,10 +116,19 @@ export default async function makeMongoDBStore(
             interuptedIndex = index;
 
             signals.push(error);
+            return [];
           }
-          return [];
+
+          throw error;
         }
       });
+
+      if (signals.length === 0) {
+        console.log("event id=%d clear. Continue", event.id);
+        clearModelSlots();
+      }
+
+      return out;
     });
 
     let eventIndex = 0;
@@ -165,10 +174,10 @@ export default async function makeMongoDBStore(
 
     // continue with remaining events
     if (interuptedIndex !== -1) {
-      console.log(
-        "priming data for these events",
-        events.slice(interuptedIndex),
-        signals,
+      console.debug(
+        "priming data for these %d event(s):\n%s",
+        events.slice(interuptedIndex).length,
+        require("util").inspect(signals, { depth: null, colors: true }),
       );
 
       // execute signals
