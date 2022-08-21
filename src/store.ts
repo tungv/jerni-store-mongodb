@@ -1,10 +1,10 @@
-import { AnyBulkWriteOperation, Collection, MongoClient } from "mongodb";
+import { Collection, MongoClient } from "mongodb";
+import getBulkOperations from "./optimistic/getBulkOperations";
 import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
   MongoDBStore,
   MongoDBModel,
-  MongoOps,
 } from "./types";
 
 export default async function makeMongoDBStore(
@@ -75,15 +75,23 @@ export default async function makeMongoDBStore(
     for (const allChangesForAnEvent of outputs) {
       let modelIndex = 0;
       for (const changesForAModel of allChangesForAnEvent) {
+        let __op = 0;
         if (changesForAModel.length === 0) {
           continue;
         }
         const model = models[modelIndex];
+        const changesWithOp = changesForAModel.map((change) => {
+          return {
+            change,
+            __op: __op++,
+            __v: events[eventIndex].id,
+          };
+        });
         const collection = getDriver(model);
 
-        await collection.bulkWrite(
-          convertModelOpsToMongoDbBulkWriteOp(changesForAModel),
-        );
+        const bulkWriteOperations = getBulkOperations(changesWithOp);
+
+        await collection.bulkWrite(bulkWriteOperations);
 
         modelIndex++;
       }
@@ -111,70 +119,6 @@ export default async function makeMongoDBStore(
     // close connections
     await client.close();
   }
-}
-
-function convertModelOpsToMongoDbBulkWriteOp<DocumentType>(
-  ops: MongoOps<DocumentType>[],
-): AnyBulkWriteOperation<DocumentType>[] {
-  return ops.flatMap((op): AnyBulkWriteOperation<DocumentType>[] => {
-    if ("insertOne" in op) {
-      return [
-        {
-          insertOne: { document: op.insertOne },
-        },
-      ];
-    }
-
-    if ("insertMany" in op) {
-      return op.insertMany.map((document) => ({
-        insertOne: { document },
-      }));
-    }
-
-    if ("updateOne" in op) {
-      return [
-        {
-          updateOne: {
-            filter: op.updateOne.where,
-            update: op.updateOne.changes,
-          },
-        },
-      ];
-    }
-
-    if ("updateMany" in op) {
-      return [
-        {
-          updateMany: {
-            filter: op.updateMany.where,
-            update: op.updateMany.changes,
-          },
-        },
-      ];
-    }
-
-    if ("deleteOne" in op) {
-      return [
-        {
-          deleteOne: {
-            filter: op.deleteOne.where,
-          },
-        },
-      ];
-    }
-
-    if ("deleteMany" in op) {
-      return [
-        {
-          deleteMany: {
-            filter: op.deleteMany.where,
-          },
-        },
-      ];
-    }
-
-    throw new Error(`Unknown op type: ${JSON.stringify(op)}`);
-  });
 }
 
 function getCollectionName(model: MongoDBModel<any>) {

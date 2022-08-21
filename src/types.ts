@@ -3,9 +3,8 @@ import {
   DeleteManyModel,
   DeleteOneModel,
   InsertOneModel,
-  UpdateManyModel,
+  UpdateFilter,
   UpdateOneModel,
-  WithId,
 } from "mongodb";
 
 export interface MongoDBStoreConfig {
@@ -68,35 +67,45 @@ export interface JourneyCommittedEvent {
   payload: unknown;
 }
 
-interface InsertOneOp<DocumentType> {
+export interface InsertOneOp<DocumentType> {
   insertOne: InsertOneModel<DocumentType>["document"];
 }
 
-interface InsertManyOp<DocumentType> {
+export interface InsertManyOp<DocumentType> {
   insertMany: InsertOneModel<DocumentType>["document"][];
 }
 
-interface UpdateOneOp<DocumentType> {
-  updateOne: {
-    where: UpdateOneModel<DocumentType>["filter"];
-    changes: UpdateOneModel<DocumentType>["update"];
-  };
+export interface UpdateOneOp<DocumentType> {
+  updateOne:
+    | {
+        where: UpdateOneModel<DocumentType>["filter"];
+        changes: UpdateFilter<DocumentType>;
+      }
+    | {
+        where: UpdateOneModel<DocumentType>["filter"];
+        pipeline: UpdateFilter<DocumentType>[];
+      };
 }
 
-interface UpdateManyOp<DocumentType> {
-  updateMany: {
-    where: UpdateManyModel<DocumentType>["filter"];
-    changes: UpdateManyModel<DocumentType>["update"];
-  };
+export interface UpdateManyOp<DocumentType> {
+  updateMany:
+    | {
+        where: UpdateOneModel<DocumentType>["filter"];
+        changes: UpdateFilter<DocumentType>;
+      }
+    | {
+        where: UpdateOneModel<DocumentType>["filter"];
+        pipeline: UpdateFilter<DocumentType>[];
+      };
 }
 
-interface DeleteOneOp<DocumentType> {
+export interface DeleteOneOp<DocumentType> {
   deleteOne: {
     where: DeleteOneModel<DocumentType>["filter"];
   };
 }
 
-interface DeleteManyOp<DocumentType> {
+export interface DeleteManyOp<DocumentType> {
   deleteMany: {
     where: DeleteManyModel<DocumentType>["filter"];
   };
