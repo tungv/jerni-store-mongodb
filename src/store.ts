@@ -1,6 +1,7 @@
 import { Collection, MongoClient } from "mongodb";
 import getCollectionName from "./getCollectionName";
 import getBulkOperations from "./optimistic/getBulkOperations";
+import { runWithModel, Signal } from "./read";
 import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
@@ -92,9 +93,33 @@ export default async function makeMongoDBStore(
   }
 
   async function handleEvents(events: JourneyCommittedEvent[]) {
-    // TODO
-    const outputs = events.map((event) => {
-      return models.map((model) => model.transform(event));
+    let interuptedIndex = -1;
+    const signals: Signal<any>[] = [];
+
+    const outputs = events.map((event, index) => {
+      if (interuptedIndex !== -1) {
+        return [];
+      }
+
+      return models.map((model) => {
+        try {
+          return runWithModel(model, event);
+        } catch (error) {
+          if (error instanceof Signal) {
+            console.debug(
+              "event id=%d reads. Stop and processing previous event (from %d to before %d)",
+              event.id,
+              events[0].id,
+              events[index].id,
+            );
+
+            interuptedIndex = index;
+
+            signals.push(error);
+          }
+          return [];
+        }
+      });
     });
 
     let eventIndex = 0;
@@ -137,6 +162,22 @@ export default async function makeMongoDBStore(
         },
       },
     );
+
+    // continue with remaining events
+    if (interuptedIndex !== -1) {
+      console.log(
+        "priming data for these events",
+        events.slice(interuptedIndex),
+        signals,
+      );
+
+      // execute signals
+      for (const signal of signals) {
+        await signal.execute(db);
+      }
+
+      await handleEvents(events.slice(interuptedIndex));
+    }
   }
 
   async function getLastSeenId() {
