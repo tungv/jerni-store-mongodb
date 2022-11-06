@@ -2,9 +2,15 @@
   "name": "@jerni/store-mongodb",
   "version": "1.0.0",
   "description": "MongoDB store for jerni using mongodb native driver v4",
-  "main": "dist/index.js",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
+  "files": [
+    "lib/src"
+  ],
   "scripts": {
-    "test": "ava tests/**/*.spec.ts"
+    "test": "ava tests/**/*.spec.ts",
+    "build": "tsc",
+    "prebuild": "rm -rf lib"
   },
   "repository": {
     "type": "git",
