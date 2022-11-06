@@ -70,7 +70,7 @@ test("it should allow reading data from the same collection", async (t) => {
   const store = await makeMongoDBStore({
     name: "test_read_pipeline",
     dbName: "mongodb_store_driver_v4_test_read_pipeline",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model_1, model_2],
   });
 
@@ -161,7 +161,7 @@ test("it should clear cache when finishing an event", async (t) => {
   const store = await makeMongoDBStore({
     name: "test_read_pipeline",
     dbName: "mongodb_store_driver_v4_test_read_pipeline",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model_1, model_2],
   });
 
@@ -221,7 +221,7 @@ test("it should allow reading in loop", async (t) => {
   const store = await makeMongoDBStore({
     name: "test_read_pipeline",
     dbName: "mongodb_store_driver_v4_test_read_pipeline",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model_1],
   });
 

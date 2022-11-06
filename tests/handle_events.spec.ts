@@ -25,7 +25,7 @@ test("it should fan out all events to all models", async (t) => {
   const store = await makeMongoDBStore({
     name: "test_register_models",
     dbName: "mongodb_store_driver_v4_test_register_models",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model1, model2],
   });
 
@@ -75,7 +75,7 @@ test("bulkWrite changes to mongodb", async (t) => {
   const store = await makeMongoDBStore({
     name: "test_bulk_write",
     dbName: "mongodb_store_driver_v4_test_bulk_write",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 

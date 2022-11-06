@@ -45,7 +45,7 @@ test("it should not apply an updateOne twice with `changes`", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 
@@ -132,7 +132,7 @@ test("it should not apply an updateOne twice with `pipeline`", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 
@@ -220,7 +220,7 @@ test("it should not apply an updateMany twice with `changes`", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 
@@ -310,7 +310,7 @@ test("it should not apply an updateMany twice with `pipeline`", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 

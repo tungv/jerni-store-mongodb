@@ -43,7 +43,7 @@ test("it should apply arrayFilters option", async (t) => {
   const store = await makeMongoDBStore({
     name: "update_array_filters",
     dbName: "mongodb_store_driver_v4_updates",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 

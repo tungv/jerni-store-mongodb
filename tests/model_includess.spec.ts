@@ -28,7 +28,7 @@ test("it should register included event types from all models if they all specif
   const store = await makeMongoDBStore({
     name: "test_register_models",
     dbName: "mongodb_store_driver_v4_test_register_models",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model1, model2],
   });
 
@@ -63,7 +63,7 @@ test("it should register all events if at least one model does not specify its i
   const store = await makeMongoDBStore({
     name: "test_register_models",
     dbName: "mongodb_store_driver_v4_test_register_models",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model1, model2],
   });
 

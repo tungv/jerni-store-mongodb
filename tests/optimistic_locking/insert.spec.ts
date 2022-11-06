@@ -23,7 +23,7 @@ test("it should not apply an insertOne twice", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 
@@ -86,7 +86,7 @@ test("it should not apply an insertMany twice", async (t) => {
   const store = await makeMongoDBStore({
     name: "optimistic_locking",
     dbName: "mongodb_store_driver_v4_optimistic",
-    url: "mongodb://localhost:27017",
+    url: "mongodb://127.0.0.1:27017",
     models: [model],
   });
 
