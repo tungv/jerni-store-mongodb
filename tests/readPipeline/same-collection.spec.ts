@@ -1,7 +1,8 @@
 import test from "ava";
 import readPipeline from "../../src/read";
 import makeMongoDBStore from "../../src/store";
-import { JourneyCommittedEvent, MongoDBModel } from "../../src/types";
+import MongoDBModel from "../../src/model";
+import { JourneyCommittedEvent } from "../../src/types";
 
 interface TestCollection {
   id: number;

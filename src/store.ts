@@ -1,12 +1,12 @@
 import { Collection, Document, MongoClient } from "mongodb";
 import getCollectionName from "./getCollectionName";
+import MongoDBModel from "./model";
 import getBulkOperations from "./optimistic/getBulkOperations";
 import { clearModelSlots, runWithModel, Signal } from "./read";
 import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
   MongoDBStore,
-  MongoDBModel,
 } from "./types";
 
 interface SnapshotDocument {

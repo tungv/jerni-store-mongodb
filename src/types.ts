@@ -7,6 +7,7 @@ import {
   UpdateFilter,
   UpdateOneModel,
 } from "mongodb";
+import MongoDBModel from "./model";
 
 export interface MongoDBStoreConfig {
   name: string;
@@ -18,13 +19,6 @@ export interface MongoDBStoreConfig {
 
 export interface TransformFn<DocumentType extends Document> {
   (event: JourneyCommittedEvent): MongoOps<DocumentType>[] | void;
-  meta?: StoreMeta;
-}
-
-export interface MongoDBModel<DocumentType extends Document> {
-  name: string;
-  version: string;
-  transform: TransformFn<DocumentType>;
   meta?: StoreMeta;
 }
 

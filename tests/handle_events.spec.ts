@@ -1,6 +1,7 @@
 import test from "ava";
+import MongoDBModel from "../src/model";
 import makeMongoDBStore from "../src/store";
-import { JourneyCommittedEvent, MongoDBModel } from "../src/types";
+import { JourneyCommittedEvent } from "../src/types";
 
 test("it should fan out all events to all models", async (t) => {
   t.plan(7);

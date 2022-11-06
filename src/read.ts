@@ -1,10 +1,11 @@
 import { Db, Document, UpdateFilter } from "mongodb";
 import getCollectionName from "./getCollectionName";
-import { JourneyCommittedEvent, MongoDBModel, TransformFn } from "./types";
+import MongoDBModel from "./model";
+import { JourneyCommittedEvent } from "./types";
 
 let currentModel: MongoDBModel<any> | null = null;
 
-export class Signal<DocumentType> {
+export class Signal<DocumentType extends Document> {
   private model: MongoDBModel<DocumentType>;
   private pipeline: UpdateFilter<DocumentType>[];
   private slotIndex: number;
@@ -51,7 +52,7 @@ const modelSlotsMap = new Map<
 >();
 let currentModelSlotIndex = 0;
 
-export function runWithModel<DocumentType>(
+export function runWithModel<DocumentType extends Document>(
   model: MongoDBModel<DocumentType>,
   event: JourneyCommittedEvent,
 ) {
@@ -68,7 +69,7 @@ export function clearModelSlots() {
   modelSlotsMap.clear();
 }
 
-export default function readPipeline<DocumentType>(
+export default function readPipeline<DocumentType extends Document>(
   pipeline: UpdateFilter<DocumentType>[],
 ): Document[] {
   const model = currentModel as MongoDBModel<DocumentType>;

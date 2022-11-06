@@ -1,6 +1,7 @@
 import test from "ava";
+import MongoDBModel from "../../src/model";
 import makeMongoDBStore from "../../src/store";
-import { JourneyCommittedEvent, MongoDBModel } from "../../src/types";
+import { JourneyCommittedEvent } from "../../src/types";
 
 test("it should not apply an deleteOnce twice", async (t) => {
   interface TestCollection {
