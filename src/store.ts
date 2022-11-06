@@ -1,4 +1,4 @@
-import { Collection, MongoClient } from "mongodb";
+import { Collection, Document, MongoClient } from "mongodb";
 import getCollectionName from "./getCollectionName";
 import getBulkOperations from "./optimistic/getBulkOperations";
 import { clearModelSlots, runWithModel, Signal } from "./read";
@@ -88,7 +88,9 @@ export default async function makeMongoDBStore(
     }
   }
 
-  function getDriver<T>(model: MongoDBModel<T>): Collection<T> {
+  function getDriver<T extends Document>(
+    model: MongoDBModel<T>,
+  ): Collection<T> {
     return db.collection(getCollectionName(model));
   }
 

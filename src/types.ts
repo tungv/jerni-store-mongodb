@@ -2,6 +2,7 @@ import {
   Collection,
   DeleteManyModel,
   DeleteOneModel,
+  Document,
   InsertOneModel,
   UpdateFilter,
   UpdateOneModel,
@@ -15,12 +16,12 @@ export interface MongoDBStoreConfig {
   models: MongoDBModel<any>[];
 }
 
-export interface TransformFn<DocumentType> {
+export interface TransformFn<DocumentType extends Document> {
   (event: JourneyCommittedEvent): MongoOps<DocumentType>[] | void;
   meta?: StoreMeta;
 }
 
-export interface MongoDBModel<DocumentType> {
+export interface MongoDBModel<DocumentType extends Document> {
   name: string;
   version: string;
   transform: TransformFn<DocumentType>;
@@ -51,7 +52,7 @@ export interface MongoDBStore {
     >,
   ) => void;
 
-  getDriver<T>(model: MongoDBModel<T>): Collection<T>;
+  getDriver<T extends Document>(model: MongoDBModel<T>): Collection<T>;
   handleEvents: (events: JourneyCommittedEvent[]) => Promise<void>;
   getLastSeenId: () => Promise<number>;
   toString(): string;
@@ -67,15 +68,15 @@ export interface JourneyCommittedEvent {
   payload: unknown;
 }
 
-export interface InsertOneOp<DocumentType> {
+export interface InsertOneOp<DocumentType extends Document> {
   insertOne: InsertOneModel<DocumentType>["document"];
 }
 
-export interface InsertManyOp<DocumentType> {
+export interface InsertManyOp<DocumentType extends Document> {
   insertMany: InsertOneModel<DocumentType>["document"][];
 }
 
-export interface UpdateOneOp<DocumentType> {
+export interface UpdateOneOp<DocumentType extends Document> {
   updateOne:
     | {
         where: UpdateOneModel<DocumentType>["filter"];
@@ -89,7 +90,7 @@ export interface UpdateOneOp<DocumentType> {
       };
 }
 
-export interface UpdateManyOp<DocumentType> {
+export interface UpdateManyOp<DocumentType extends Document> {
   updateMany:
     | {
         where: UpdateOneModel<DocumentType>["filter"];
@@ -103,19 +104,19 @@ export interface UpdateManyOp<DocumentType> {
       };
 }
 
-export interface DeleteOneOp<DocumentType> {
+export interface DeleteOneOp<DocumentType extends Document> {
   deleteOne: {
     where: DeleteOneModel<DocumentType>["filter"];
   };
 }
 
-export interface DeleteManyOp<DocumentType> {
+export interface DeleteManyOp<DocumentType extends Document> {
   deleteMany: {
     where: DeleteManyModel<DocumentType>["filter"];
   };
 }
 
-export type MongoOps<DocumentType> =
+export type MongoOps<DocumentType extends Document> =
   | InsertOneOp<DocumentType>
   | InsertManyOp<DocumentType>
   | UpdateOneOp<DocumentType>
