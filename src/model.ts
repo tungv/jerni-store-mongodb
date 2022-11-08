@@ -7,12 +7,17 @@ export default class MongoDBModel<DocumentType extends Document> {
   transform: TransformFn<DocumentType>;
   meta?: StoreMeta;
 
-  constructor(
-    name: string,
-    version: string,
-    transform: TransformFn<DocumentType>,
-    meta?: StoreMeta,
-  ) {
+  constructor({
+    name,
+    version,
+    transform,
+    meta,
+  }: {
+    name: string;
+    version: string;
+    transform: TransformFn<DocumentType>;
+    meta?: StoreMeta;
+  }) {
     this.name = name;
     this.version = version;
     this.transform = transform;
