@@ -139,10 +139,12 @@ export default async function makeMongoDBStore(
       let modelIndex = 0;
       for (const changesForAModel of allChangesForAnEvent) {
         let __op = 0;
+        const model = models[modelIndex];
+        modelIndex++;
         if (changesForAModel === undefined || changesForAModel.length === 0) {
           continue;
         }
-        const model = models[modelIndex];
+
         const changesWithOp = changesForAModel.map((change) => {
           return {
             change,
@@ -155,8 +157,6 @@ export default async function makeMongoDBStore(
         const bulkWriteOperations = getBulkOperations(changesWithOp);
 
         await collection.bulkWrite(bulkWriteOperations);
-
-        modelIndex++;
       }
       eventIndex++;
     }
