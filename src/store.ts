@@ -126,7 +126,7 @@ export default async function makeMongoDBStore(
       });
 
       if (signals.length === 0) {
-        console.log("event id=%d clear. Continue", event.id);
+        // console.log("event id=%d clear. Continue", event.id);
         clearModelSlots();
       }
 
