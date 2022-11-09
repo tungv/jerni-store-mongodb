@@ -62,7 +62,7 @@ export function runWithModel<DocumentType extends Document>(
   const res = model.transform(event);
   currentModel = null;
 
-  return res;
+  return res || [];
 }
 
 export function clearModelSlots() {
