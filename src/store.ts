@@ -218,9 +218,16 @@ export default async function makeMongoDBStore(
     }
 
     // delete rows in snapshot collection
-    await snapshotCollection.deleteMany({
-      full_collection_name: { $in: models.map(getCollectionName) },
-    });
+    await snapshotCollection.updateMany(
+      {
+        full_collection_name: { $in: models.map(getCollectionName) },
+      },
+      {
+        $set: {
+          __v: 0,
+        },
+      },
+    );
   }
 
   async function dispose() {
