@@ -1,6 +1,6 @@
 import test from "ava";
-import makeMongoDBStore from "../src/store";
-import { JourneyCommittedEvent } from "../src/types";
+import makeMongoDBStore from "../../src/store";
+import { JourneyCommittedEvent } from "../../src/types";
 
 test("it should register included event types from all models if they all specify their interested events", async (t) => {
   const model1 = {

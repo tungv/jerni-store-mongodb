@@ -1,7 +1,7 @@
 import test from "ava";
-import { MongoDBModel } from "../src";
-import makeMongoDBStore from "../src/store";
-import { JourneyCommittedEvent } from "../src/types";
+import { MongoDBModel } from "../../src";
+import makeMongoDBStore from "../../src/store";
+import { JourneyCommittedEvent } from "../../src/types";
 
 test("it should insert data to all models", async (t) => {
   const model1 = new MongoDBModel({

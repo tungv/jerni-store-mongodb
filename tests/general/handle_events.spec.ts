@@ -1,10 +1,10 @@
 import test from "ava";
-import MongoDBModel from "../src/model";
-import makeMongoDBStore from "../src/store";
-import { JourneyCommittedEvent } from "../src/types";
+import MongoDBModel from "../../src/model";
+import makeMongoDBStore from "../../src/store";
+import { JourneyCommittedEvent } from "../../src/types";
 
 test("it should fan out all events to all models", async (t) => {
-  t.plan(7);
+  t.plan(8);
   const model1 = {
     name: "model_1",
     version: "1",
@@ -30,7 +30,7 @@ test("it should fan out all events to all models", async (t) => {
     models: [model1, model2],
   });
 
-  await store.handleEvents([
+  const changes = await store.handleEvents([
     {
       id: 1,
       type: "event_1",
@@ -52,6 +52,19 @@ test("it should fan out all events to all models", async (t) => {
 
   t.is(lastSeen, 3);
 
+  t.deepEqual(changes, {
+    model_1_v1: {
+      added: 0,
+      updated: 0,
+      deleted: 0,
+    },
+    model_2_v1: {
+      added: 0,
+      updated: 0,
+      deleted: 0,
+    },
+  });
+
   await store.dispose();
 });
 
@@ -69,6 +82,12 @@ test("bulkWrite changes to mongodb", async (t) => {
         {
           insertOne: { id: event.id, name: "test_" + event.type },
         },
+        {
+          updateOne: {
+            where: { id: event.id },
+            changes: { $set: { name: "test_" + event.type } },
+          },
+        },
       ];
     },
   };
@@ -82,7 +101,7 @@ test("bulkWrite changes to mongodb", async (t) => {
 
   await store.clean();
 
-  await store.handleEvents([
+  const changes = await store.handleEvents([
     {
       id: 1,
       type: "event_1",
@@ -98,6 +117,13 @@ test("bulkWrite changes to mongodb", async (t) => {
   const collection = store.getDriver(model);
 
   t.is(collection.collectionName, "model_1_v1");
+  t.deepEqual(changes, {
+    model_1_v1: {
+      added: 2,
+      updated: 2,
+      deleted: 0,
+    },
+  });
 
   t.is(await collection.countDocuments(), 2);
 });

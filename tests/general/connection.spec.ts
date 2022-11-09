@@ -1,5 +1,5 @@
 import test from "ava";
-import makeMongoDBStore from "../src/store";
+import makeMongoDBStore from "../../src/store";
 
 test("it should create a store with a dispose fn", async (t) => {
   const store = await makeMongoDBStore({
