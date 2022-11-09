@@ -9,6 +9,12 @@ import {
 } from "mongodb";
 import MongoDBModel from "./model";
 
+export interface Changes {
+  added: number;
+  updated: number;
+  deleted: number;
+}
+
 export interface MongoDBStoreConfig {
   name: string;
   dbName: string;
@@ -47,7 +53,9 @@ export interface MongoDBStore {
   ) => void;
 
   getDriver<T extends Document>(model: MongoDBModel<T>): Collection<T>;
-  handleEvents: (events: JourneyCommittedEvent[]) => Promise<void>;
+  handleEvents: (
+    events: JourneyCommittedEvent[],
+  ) => Promise<{ [modelIdentifier: string]: Changes }>;
   getLastSeenId: () => Promise<number>;
   toString(): string;
 

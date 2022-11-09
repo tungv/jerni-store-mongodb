@@ -7,6 +7,7 @@ import {
   JourneyCommittedEvent,
   MongoDBStoreConfig,
   MongoDBStore,
+  Changes,
 } from "./types";
 
 interface SnapshotDocument {
@@ -94,7 +95,30 @@ export default async function makeMongoDBStore(
     return db.collection(getCollectionName(model));
   }
 
-  async function handleEvents(events: JourneyCommittedEvent[]) {
+  async function handleEvents(
+    events: JourneyCommittedEvent[],
+  ): Promise<{ [modelIdentifier: string]: Changes }> {
+    const changes = models.map(() => ({
+      added: 0,
+      updated: 0,
+      deleted: 0,
+    }));
+    await handleEventsRecursive(events, changes);
+
+    return Object.fromEntries(
+      models.map((model, modelIndex) => {
+        return [
+          `${model.name}_v${model.version}`,
+          changes[modelIndex] ?? { added: 0, updated: 0, deleted: 0 },
+        ];
+      }),
+    );
+  }
+
+  async function handleEventsRecursive(
+    events: JourneyCommittedEvent[],
+    changes: Changes[],
+  ) {
     let interuptedIndex = -1;
     const signals: Signal<any>[] = [];
 
@@ -140,6 +164,7 @@ export default async function makeMongoDBStore(
       for (const changesForAModel of allChangesForAnEvent) {
         let __op = 0;
         const model = models[modelIndex];
+        const changesForThisModel = changes[modelIndex];
         modelIndex++;
         if (changesForAModel === undefined || changesForAModel.length === 0) {
           continue;
@@ -156,7 +181,11 @@ export default async function makeMongoDBStore(
 
         const bulkWriteOperations = getBulkOperations(changesWithOp);
 
-        await collection.bulkWrite(bulkWriteOperations);
+        const res = await collection.bulkWrite(bulkWriteOperations);
+
+        changesForThisModel.added += res.upsertedCount;
+        changesForThisModel.updated += res.modifiedCount;
+        changesForThisModel.deleted += res.deletedCount;
       }
       eventIndex++;
     }
@@ -187,7 +216,7 @@ export default async function makeMongoDBStore(
         await signal.execute(db);
       }
 
-      await handleEvents(events.slice(interuptedIndex));
+      await handleEventsRecursive(events.slice(interuptedIndex), changes);
     }
   }
 
