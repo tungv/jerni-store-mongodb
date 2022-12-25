@@ -59,7 +59,7 @@ export interface MongoDBStore {
   getLastSeenId: () => Promise<number>;
   toString(): string;
 
-  // listen
+  listen: () => AsyncGenerator<number, void, unknown>;
   clean: () => Promise<void>;
   dispose: () => Promise<void>;
 }

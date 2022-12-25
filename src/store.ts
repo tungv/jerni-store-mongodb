@@ -9,6 +9,7 @@ import {
   MongoDBStore,
   Changes,
 } from "./types";
+import { setTimeout } from "timers/promises";
 
 interface SnapshotDocument {
   __v: number;
@@ -20,6 +21,7 @@ export default async function makeMongoDBStore(
 ): Promise<MongoDBStore> {
   const client = await MongoClient.connect(config.url);
   const db = client.db(config.dbName);
+  let hasStopped = false;
 
   const models = config.models;
 
@@ -44,6 +46,14 @@ export default async function makeMongoDBStore(
     );
   }
 
+  async function* listen() {
+    while (!hasStopped) {
+      const next = await getLastSeenId();
+      yield next;
+      await setTimeout(300);
+    }
+  }
+
   const store: MongoDBStore = {
     name: config.name,
     meta: {
@@ -55,6 +65,7 @@ export default async function makeMongoDBStore(
     getLastSeenId,
     clean,
     dispose,
+    listen,
     toString() {
       return `[@jerni/store-mongodb] - name: ${config.name} - URL: ${config.url} - DB: ${config.dbName}}`;
     },
@@ -122,11 +133,11 @@ export default async function makeMongoDBStore(
     events: JourneyCommittedEvent[],
     changes: Changes[],
   ) {
-    let interuptedIndex = -1;
+    let interruptedIndex = -1;
     const signals: Signal<any>[] = [];
 
     const outputs = events.map((event, index) => {
-      if (interuptedIndex !== -1) {
+      if (interruptedIndex !== -1) {
         return [];
       }
 
@@ -142,7 +153,7 @@ export default async function makeMongoDBStore(
               events[index].id,
             );
 
-            interuptedIndex = index;
+            interruptedIndex = index;
 
             signals.push(error);
             return [];
@@ -207,10 +218,10 @@ export default async function makeMongoDBStore(
     );
 
     // continue with remaining events
-    if (interuptedIndex !== -1) {
+    if (interruptedIndex !== -1) {
       console.debug(
         "priming data for these %d event(s):\n%s",
-        events.slice(interuptedIndex).length,
+        events.slice(interruptedIndex).length,
         require("util").inspect(signals, { depth: null, colors: true }),
       );
 
@@ -219,7 +230,7 @@ export default async function makeMongoDBStore(
         await signal.execute(db);
       }
 
-      await handleEventsRecursive(events.slice(interuptedIndex), changes);
+      await handleEventsRecursive(events.slice(interruptedIndex), changes);
     }
   }
 
@@ -263,6 +274,7 @@ export default async function makeMongoDBStore(
   }
 
   async function dispose() {
+    hasStopped = true;
     // close connections
     await client.close();
   }
