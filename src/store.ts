@@ -55,6 +55,9 @@ export default async function makeMongoDBStore(
     getLastSeenId,
     clean,
     dispose,
+    toString() {
+      return `[@jerni/store-mongodb] - name: ${config.name} - URL: ${config.url} - DB: ${config.dbName}}`;
+    },
   };
 
   return store;
