@@ -21,27 +21,52 @@ type OptimisticDocument = {
   [key: string]: any;
 };
 
-function newerThan(where: { __v: number; __op: number }): {
+interface Newer {
   $or: [{ __v: { $gt: number } }, { __v: number; __op: { $gte: number } }];
-} {
+}
+
+interface Older {
+  $or: [{ __v: { $lt: number } }, { __v: number; __op: { $lt: number } }];
+}
+
+function newerThan<T extends Record<string, any>>(
+  where: { __v: number; __op: number },
+  original: T = {} as T,
+): (Newer & T) | { $and: [T, Newer] } {
   // we only insert if this query doesn't match
   const gtEventId = { __v: { $gt: where.__v } };
   const gtOpCounterInSameEvent = { __op: { $gte: where.__op }, __v: where.__v };
 
+  if ("$or" in original) {
+    return {
+      $and: [original, { $or: [gtEventId, gtOpCounterInSameEvent] }],
+    };
+  }
+
   return {
     $or: [gtEventId, gtOpCounterInSameEvent],
+    ...original,
   };
 }
 
-function olderThan(where: { __v: number; __op: number }): {
-  $or: [{ __v: { $lt: number } }, { __v: number; __op: { $lt: number } }];
-} {
-  return {
+function olderThan<T extends Record<string, any>>(
+  where: { __v: number; __op: number },
+  original: T = {} as T,
+): (Older & T) | { $and: [T, Older] } {
+  const c = {
     $or: [
       { __v: { $lt: where.__v } },
       { __v: where.__v, __op: { $lt: where.__op } },
     ],
-  };
+  } satisfies Older;
+
+  if ("$or" in original) {
+    return {
+      $and: [original, c],
+    };
+  }
+
+  return { ...c, ...original };
 }
 
 export default function getBulkOperations(
@@ -119,10 +144,7 @@ export default function getBulkOperations(
 
   function updateOne(change: UpdateOneOp<OptimisticDocument>, __v: number) {
     const __op = opCounter++;
-    const filter = {
-      ...change.updateOne.where,
-      ...olderThan({ __v, __op }),
-    };
+    const filter = olderThan({ __v, __op }, change.updateOne.where);
 
     if ("changes" in change.updateOne) {
       const changes = appendOptimisticSet(change.updateOne.changes, __v, __op);
@@ -162,10 +184,7 @@ export default function getBulkOperations(
 
   function updateMany(change: UpdateManyOp<OptimisticDocument>, __v: number) {
     const __op = opCounter++;
-    const filter = {
-      ...change.updateMany.where,
-      ...olderThan({ __v, __op }),
-    };
+    const filter = olderThan({ __v, __op }, change.updateMany.where);
 
     if ("changes" in change.updateMany) {
       const changes = appendOptimisticSet(change.updateMany.changes, __v, __op);
@@ -208,10 +227,7 @@ export default function getBulkOperations(
     return [
       {
         deleteOne: {
-          filter: {
-            ...change.deleteOne.where,
-            ...olderThan({ __v, __op }),
-          },
+          filter: olderThan({ __v, __op }, change.deleteOne.where),
         },
       },
     ];
@@ -221,10 +237,7 @@ export default function getBulkOperations(
     return [
       {
         deleteMany: {
-          filter: {
-            ...change.deleteMany.where,
-            ...olderThan({ __v, __op }),
-          },
+          filter: olderThan({ __v, __op }, change.deleteMany.where),
         },
       },
     ];
